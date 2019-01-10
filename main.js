@@ -14,7 +14,9 @@ let mainWindow
 
 app.on('ready', () => {
 
-    let mainWindow = new BrowserWindow()
+    let mainWindow = new BrowserWindow({
+        icon: path.join(__dirname, '/assets/favicon.ico')
+    });
 
     const startUrl = process.env.ELECTRON_START_URL || url.format({
           pathname: path.join(__dirname, './build/index.html'),
