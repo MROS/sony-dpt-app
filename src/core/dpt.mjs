@@ -4,10 +4,8 @@ import axios from "axios";
 import https from "https";
 import crypto from "crypto";
 import FormData from "form-data";
-// import request from "request";
-// import rp from "request-promise";
 
-// let rp = rp.defaults({jar: true});
+const MAX_LENGTH = 100 * 1024 * 1024;
 
 const KEY_PATH = `${process.env.HOME}/.config/digital-paper/key`;
 const CLIENT_ID_PATH = `${process.env.HOME}/.config/digital-paper/client_id`;
@@ -29,7 +27,8 @@ class DigitalPaper {
             httpsAgent: new https.Agent({
                 rejectUnauthorized: false,
             }),
-            baseURL: `https://${this.address}:${PORT}`
+            baseURL: `https://${this.address}:${PORT}`,
+            maxContentLength: MAX_LENGTH,
         });
     }
 
@@ -64,7 +63,8 @@ class DigitalPaper {
                 rejectUnauthorized: false,
             }),
             headers: { Cookie: this.cookie },
-            baseURL: this.base_url()
+            baseURL: this.base_url(),
+            maxContentLength: MAX_LENGTH
         });
 
         console.log(this.cookie);
@@ -89,10 +89,10 @@ class DigitalPaper {
         console.log(`document_id: ${id}`);
         let doc_url = `/documents/${id}/file`;
 
-        const form = new FormData();
+        const form = new FormData({maxDataSize: MAX_LENGTH});
 
         let content = fs.readFileSync(filename);
-        form.append("file", "hi");
+        form.append("file", content, base_name);
 
         console.log(form);
         let response = await this.http.put(doc_url, form, {
@@ -105,10 +105,9 @@ class DigitalPaper {
 (async function () {
     let dp = new DigitalPaper("10.5.6.153");
     try {
-        let au = await dp.authenticate();
-        let list = await dp.list_all();
-        // let list = await dp.upload("/home/mros/Downloads/webassembly.pdf");
-        console.log(list);
+        await dp.authenticate();
+        // let list = await dp.list_all();
+        await dp.upload("/home/mros/Downloads/MySQL技术内幕(InnoDB存储引擎)第2版.pdf");
     } catch (err) {
         console.log(err);
     }
