@@ -1,4 +1,5 @@
 import fs from "fs";
+import child_process from "child_process";
 import path from "path";
 import axios from "axios";
 import https from "https";
@@ -103,11 +104,15 @@ class DigitalPaper {
 }
 
 (async function () {
-    let dp = new DigitalPaper("10.5.6.153");
+    let address = child_process.execSync("avahi-resolve --name digitalpaper.local")
+        .toString().trim().split("\t")[1];
+
+    let dp = new DigitalPaper(address);
     try {
         await dp.authenticate();
-        // let list = await dp.list_all();
-        await dp.upload("/home/mros/Downloads/MySQL技术内幕(InnoDB存储引擎)第2版.pdf");
+        let list = await dp.list_all();
+        console.log(list);
+        // await dp.upload("/home/mros/Downloads/MySQL技术内幕(InnoDB存储引擎)第2版.pdf");
     } catch (err) {
         console.log(err);
     }
