@@ -1,4 +1,7 @@
+#! /usr/bin/node
+
 const dns = require("dns").promises;
+const fs = require("fs").promises;
 const DigitalPaper = require("./dpt");
 const readline = require('readline');
 const child_process = require("child_process");
@@ -126,10 +129,33 @@ class DigitalPaperCache extends DigitalPaper {
       case "put": {
         try {
           for (let i = 1; i < cmd.length; i++) {
-            let file_path = cmd[i].replace(/\'/g, "");
+            let file_path;
+            if (cmd[i][0] != "/") {
+              // 相對路徑
+              file_path = process.cwd() + "/" + cmd[i];
+            } else {
+              // 絕對路徑，去除前後''
+              file_path = cmd[i].replace(/\'/g, "");
+            }
             console.log(`正在上傳 ${file_path}......`);
             await dp.upload(file_path);
             console.log(`成功上傳 ${file_path}！`);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        break;
+      }
+      case "put-re": {
+        try {
+          if (cmd.length != 2) {
+            throw "put-re [正則表達式]";
+          }
+          let re = new RegExp(cmd[1]);
+          for (let f of (await fs.readdir(".")).filter(t => t.match(re) != null)) {
+            console.log(`正在上傳 ${f}......`);
+            await dp.upload(f);
+            console.log(`成功上傳 ${f}！`);
           }
         } catch (err) {
           console.log(err);
