@@ -87,9 +87,28 @@ class DigitalPaperCache extends DigitalPaper {
   }
 }
 
+const HOSTNAME = "digitalpaper.local";
+
 (async function () {
 
-  let address = (await dns.lookup("digitalpaper.local")).address;
+  let address = process.argv[2];
+  if (address == undefined) {
+    try {
+      address = (await dns.lookup(HOSTNAME)).address;
+    } catch (err) {
+      try {
+        console.log(`node 內建的 dns 無法解析 ${HOSTNAME}`)
+        console.log(err);
+        console.log("嘗試使用 avahi...");
+        address = (await child_process.execSync(`avahi-resolve -n ${HOSTNAME}`)).toString().split("\t")[1].trim();
+      } catch (err) {
+        console.log("取得 ip 位址錯誤");
+        console.log(err);
+        process.exit();
+      }
+    }
+  }
+  console.log(`ip 爲 ${address}`);
 
   let dp
   try {
@@ -97,9 +116,11 @@ class DigitalPaperCache extends DigitalPaper {
     await dp.authenticate();
   } catch (err) {
     console.log(err);
+    console.log("連線失敗");
+    process.exit();
   }
 
-  console.log(`取得連線，ip 爲 ${address}`);
+  console.log("取得連線");
   process.stdout.write("> ");
   rl.on('line', async function (line) {
     // 若以 - 開頭，執行本地指令
