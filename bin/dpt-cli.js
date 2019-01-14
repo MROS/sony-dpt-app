@@ -2,7 +2,7 @@
 
 const dns = require("dns").promises;
 const fs = require("fs").promises;
-const DigitalPaper = require("./dpt");
+const DigitalPaper = require("../dpt");
 const readline = require('readline');
 const child_process = require("child_process");
 
