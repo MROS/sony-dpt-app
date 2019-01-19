@@ -65,6 +65,9 @@ class DigitalPaperCache extends DigitalPaper {
     let list = await this.ls_folder_cache(folder_id);
     return list.filter(x => x.entry_type == "folder");
   }
+  async info() {
+    return await this.folder_info(this.current_folder_id);
+  }
   async mkdir(folder_name) {
     await this.new_folder(folder_name, this.current_folder_id);
     // 已經發生變動，清除快取
@@ -74,15 +77,29 @@ class DigitalPaperCache extends DigitalPaper {
     let list = await this.ls();
     let doc_id = find_id(list, doc_name);
     let parent_id = find_id(list, parent_name);
+    // 已經發生變動，清除快取
     this.cache.set(this.current_folder_id, undefined);
     this.cache.set(parent_id, undefined);
     await this.change_doc(doc_id, undefined, parent_id);
   }
-  async cd(folder_name) {
-    let dirs = await this.lsdir();
-    let id = find_id(dirs, folder_name);
-    if (id != null) {
-      this.current_folder_id = id;
+  async cd(folder_path) {
+    for (let dir of folder_path.split("/")) {
+      if (dir == "..") {
+        let parent_id = (await this.info()).parent_folder_id;
+        if (parent_id.length > 0) {
+          this.current_folder_id = parent_id;
+        }
+        continue;
+      }
+      let dirs = await this.lsdir();
+      let id = find_id(dirs, dir);
+      if (id != null) {
+        this.current_folder_id = id;
+        console.log(`進入 ${dir}`);
+      } else {
+        console.log(`找不到 ${dir}`);
+        break;
+      }
     }
   }
 }
@@ -259,6 +276,15 @@ const HOSTNAME = "digitalpaper.local";
               console.log(`成功移動 ${x.entry_name}！`);
             }
           }
+        } catch (err) {
+          console.log(err);
+        }
+        break;
+      }
+      case "info": {
+        try {
+          let info = await dp.info();
+          console.log(info);
         } catch (err) {
           console.log(err);
         }

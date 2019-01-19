@@ -71,6 +71,11 @@ class DigitalPaper {
     return response;
   }
 
+  async folder_info(folder_id) {
+    let response = await this.http.get(`/folders/${folder_id}`);
+    return response.data;
+  }
+
   async ls_folder(folder_id) {
     let response = await this.http.get(`/folders/${folder_id}/entries2`);
     return response.data.entry_list;
