@@ -90,24 +90,42 @@ class DigitalPaperCache extends DigitalPaper {
     await this.change_doc(doc_id, undefined, parent_id);
   }
   async cd(folder_path) {
-    for (let dir of folder_path.split("/")) {
+    try {
+      let id = await this.get_id_by_path(folder_path);
+      this.current_folder_id = id;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  async rm(path) {
+    try {
+      let id = await this.get_id_by_path(path);
+      let ret = await super.rm(id);
+      // 已經發生變動，清除快取
+      this.cache.set(this.current_folder_id, undefined);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  async get_id_by_path(path) {
+    let ret_id = this.current_folder_id;
+    for (let dir of path.split("/")) {
       if (dir == "..") {
         let parent_id = (await this.info()).parent_folder_id;
         if (parent_id.length > 0) {
-          this.current_folder_id = parent_id;
+          ret_id = parent_id;
         }
         continue;
       }
-      let dirs = await this.lsdir();
+      let dirs = await this.ls_folder_cache(ret_id);
       let id = find_id(dirs, dir);
       if (id != null) {
-        this.current_folder_id = id;
-        console.log(`進入 ${dir}`);
+        ret_id = id;
       } else {
-        console.log(`找不到 ${dir}`);
-        break;
+        throw new Error(`找不到 ${dir}`);
       }
     }
+    return ret_id;
   }
 }
 
@@ -255,10 +273,25 @@ const HOSTNAME = "digitalpaper.local";
         }
         break;
       }
+      case "rm": {
+        try {
+          if (cmd.length < 2) {
+            throw "rm 的參數數量至少爲 2";
+          }
+          for (let i = 1; i < cmd.length; i++) {
+            console.log(`正在刪除 ${cmd[i]}......`);
+            await dp.rm(cmd[i]);
+            console.log(`成功刪除 ${cmd[i]}！`);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        break;
+      }
       case "move": {
         try {
           if (cmd.length < 3) {
-            throw "move 的參數至少爲 3";
+            throw "move 的參數數量至少爲 3";
           }
           let target = cmd[cmd.length - 1];
           for (let i = 1; i < cmd.length - 1; i++) {

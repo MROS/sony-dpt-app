@@ -94,6 +94,14 @@ class DigitalPaper {
     return response.data;
   }
 
+  async rm(doc_id) {
+    let data = {
+      document_id: doc_id
+    };
+    let response = await this.http.delete(`/documents/${doc_id}`, data);
+    return response;
+  }
+
   async change_doc(doc_id, new_file_name, new_parent_folder_id) {
     let info = {
       parent_folder_id: new_parent_folder_id,
