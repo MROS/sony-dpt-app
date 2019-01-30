@@ -68,6 +68,13 @@ class DigitalPaperCache extends DigitalPaper {
   async info() {
     return await this.folder_info(this.current_folder_id);
   }
+  async upload(filename, remote_dir_id) {
+    remote_dir_id = remote_dir_id || this.current_folder_id;
+    let ret = await super.upload(filename, remote_dir_id);
+    // 已經發生變動，清除快取
+    this.cache.set(remote_dir_id, undefined);
+    return ret;
+  }
   async mkdir(folder_name) {
     await this.new_folder(folder_name, this.current_folder_id);
     // 已經發生變動，清除快取
