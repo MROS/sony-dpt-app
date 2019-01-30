@@ -158,7 +158,10 @@ const HOSTNAME = "digitalpaper.local";
       case "ls-all": {
         try {
           const list = await dp.ls_all_doc();
-          console.log(list.entry_list.map(b => b.entry_name));
+          const names = list.entry_list.map(b => b.entry_name);
+          names.forEach((name) => {
+            console.log(name);
+          })
         } catch (err) {
           console.log(err);
         }

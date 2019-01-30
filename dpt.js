@@ -44,12 +44,10 @@ class DigitalPaper {
 
   async authenticate() {
     let nonce = await this.get_nonce();
-    // console.log(`nonce: ${nonce}`);
 
     const sign = crypto.createSign("RSA-SHA256");
     sign.update(nonce);
     let nonce_signed = sign.sign(this.key, "base64");
-    // console.log(`signed nonce: ${nonce_signed}`);
 
     let data = {
       client_id: this.client_id,
@@ -124,7 +122,6 @@ class DigitalPaper {
     let content = fs.readFileSync(filename);
     form.append("file", content, base_name);
 
-    console.log(form);
     let response = await this.http.put(doc_url, form, {
       headers: getHeaders(form)
     })
