@@ -112,6 +112,14 @@ class DigitalPaper {
     return response.data;
   }
 
+  async download(doc_id, filename) {
+    let config = {
+      responseType: "arraybuffer"
+    };
+    let response = await this.http.get(`/documents/${doc_id}/file`, config);
+    fs.writeFileSync(filename, response.data);
+  }
+
   async upload(filename, remote_dir_id) {
     remote_dir_id = remote_dir_id || "root";
     let base_name = path.basename(filename);

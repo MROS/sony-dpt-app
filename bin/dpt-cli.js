@@ -89,6 +89,14 @@ class DigitalPaperCache extends DigitalPaper {
     this.cache.set(parent_id, undefined);
     await this.change_doc(doc_id, undefined, parent_id);
   }
+  async download_by_path(doc_name) {
+    let list = await this.ls();
+    let doc_id = find_id(list, doc_name);
+    if (doc_id == null) {
+      throw "沒這個檔案";
+    }
+    await this.download(doc_id, doc_name);
+  }
   async cd(folder_path) {
     try {
       let id = await this.get_id_by_path(folder_path);
@@ -222,6 +230,19 @@ const HOSTNAME = "digitalpaper.local";
             console.log(`正在上傳 ${f}......`);
             await dp.upload(f);
             console.log(`成功上傳 ${f}！`);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        break;
+      }
+      case "get": {
+        try {
+          for (let i = 1; i < cmd.length; i++) {
+            let file_path = cmd[i];
+            console.log(`正在下載 ${file_path}......`);
+            await dp.download_by_path(file_path);
+            console.log(`成功下載 ${file_path}！`);
           }
         } catch (err) {
           console.log(err);
