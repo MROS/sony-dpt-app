@@ -1,4 +1,4 @@
-#! /usr/bin/node
+#! /usr/bin/env node
 
 const dns = require("dns").promises;
 const fs = require("fs").promises;
